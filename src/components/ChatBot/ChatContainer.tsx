@@ -68,11 +68,11 @@ const ChatContainer = ({ className }: ChatContainerProps) => {
   };
 
   return (
-    <div className={`flex flex-col h-screen w-full ${className}`}>
+    <div className={`flex flex-col h-full ${className}`}>
       <ChatHeader />
       
       <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-full mx-auto">
           {messages.map(message => (
             <MessageBubble key={message.id} message={message} />
           ))}
