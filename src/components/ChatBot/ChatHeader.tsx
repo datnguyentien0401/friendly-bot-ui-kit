@@ -9,7 +9,7 @@ const ChatHeader = () => {
         <Bot className="w-5 h-5 text-white" />
       </div>
       <div>
-        <h3 className="font-medium">Friendly Bot</h3>
+        <h3 className="font-medium">RaCat</h3>
         <p className="text-xs text-gray-500">Online</p>
       </div>
     </div>
