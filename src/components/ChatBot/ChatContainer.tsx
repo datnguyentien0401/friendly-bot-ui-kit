@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import ChatHeader from "./ChatHeader";
 import ChatInput from "./ChatInput";
 import MessageBubble, { Message } from "./MessageBubble";
+import { Bot } from "lucide-react";
 
 const INITIAL_MESSAGES: Message[] = [
   {
@@ -67,30 +68,32 @@ const ChatContainer = ({ className }: ChatContainerProps) => {
   };
 
   return (
-    <div className={`flex flex-col rounded-lg shadow-lg border overflow-hidden max-w-md w-full h-[500px] ${className}`}>
+    <div className={`flex flex-col h-screen w-full ${className}`}>
       <ChatHeader />
       
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
-        {messages.map(message => (
-          <MessageBubble key={message.id} message={message} />
-        ))}
-        
-        {isTyping && (
-          <div className="flex items-center gap-2 animate-pulse">
-            <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
-              <Bot className="w-5 h-5 text-white" />
-            </div>
-            <div className="bg-blue-500 text-white px-4 py-2 rounded-2xl rounded-bl-none">
-              <div className="flex gap-1">
-                <div className="w-2 h-2 rounded-full bg-white animate-bounce" style={{ animationDelay: "0ms" }}></div>
-                <div className="w-2 h-2 rounded-full bg-white animate-bounce" style={{ animationDelay: "200ms" }}></div>
-                <div className="w-2 h-2 rounded-full bg-white animate-bounce" style={{ animationDelay: "400ms" }}></div>
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
+        <div className="max-w-3xl mx-auto">
+          {messages.map(message => (
+            <MessageBubble key={message.id} message={message} />
+          ))}
+          
+          {isTyping && (
+            <div className="flex items-center gap-2 animate-pulse ml-2">
+              <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
+                <Bot className="w-5 h-5 text-white" />
+              </div>
+              <div className="bg-blue-500 text-white px-4 py-2 rounded-2xl rounded-bl-none">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 rounded-full bg-white animate-bounce" style={{ animationDelay: "0ms" }}></div>
+                  <div className="w-2 h-2 rounded-full bg-white animate-bounce" style={{ animationDelay: "200ms" }}></div>
+                  <div className="w-2 h-2 rounded-full bg-white animate-bounce" style={{ animationDelay: "400ms" }}></div>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-        
-        <div ref={messagesEndRef} />
+          )}
+          
+          <div ref={messagesEndRef} />
+        </div>
       </div>
       
       <ChatInput onSendMessage={handleSendMessage} disabled={isTyping} />

@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { SendIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -20,27 +20,43 @@ const ChatInput = ({ onSendMessage, disabled = false }: ChatInputProps) => {
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (message.trim() && !disabled) {
+        onSendMessage(message);
+        setMessage("");
+      }
+    }
+  };
+
   return (
-    <form 
-      onSubmit={handleSubmit} 
-      className="flex items-center gap-2 border-t p-3 bg-white"
-    >
-      <Input
-        placeholder="Type a message..."
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        disabled={disabled}
-        className="flex-grow rounded-full bg-gray-100 border-0 focus-visible:ring-blue-500"
-      />
-      <Button 
-        type="submit" 
-        size="icon" 
-        disabled={!message.trim() || disabled}
-        className="rounded-full bg-blue-500 hover:bg-blue-600 transition-colors"
+    <div className="border-t p-4 bg-white">
+      <form 
+        onSubmit={handleSubmit} 
+        className="max-w-3xl mx-auto relative"
       >
-        <SendIcon className="h-4 w-4" />
-      </Button>
-    </form>
+        <Textarea
+          placeholder="Type a message..."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={handleKeyDown}
+          disabled={disabled}
+          className="min-h-[60px] w-full resize-none rounded-lg border border-gray-200 bg-white px-4 py-3 pr-14 shadow-sm focus-visible:ring-blue-500"
+        />
+        <Button 
+          type="submit" 
+          size="icon" 
+          disabled={!message.trim() || disabled}
+          className="absolute right-3 bottom-3 rounded-full bg-blue-500 hover:bg-blue-600 transition-colors"
+        >
+          <SendIcon className="h-4 w-4" />
+        </Button>
+      </form>
+      <div className="mt-2 text-center text-xs text-gray-500">
+        Press Enter to send, Shift+Enter for new line
+      </div>
+    </div>
   );
 };
 

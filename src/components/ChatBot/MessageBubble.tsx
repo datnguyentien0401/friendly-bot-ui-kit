@@ -16,29 +16,29 @@ interface MessageBubbleProps {
 
 const MessageBubble = ({ message }: MessageBubbleProps) => {
   return (
-    <div
-      className={cn(
-        "flex items-start gap-2 mb-4 animate-fade-in",
-        message.isBot ? "justify-start" : "justify-end"
-      )}
-    >
-      {message.isBot && <ChatBotAvatar isBot={true} />}
-      
-      <div
-        className={cn(
-          "px-4 py-2 rounded-2xl max-w-[80%]",
-          message.isBot 
-            ? "bg-blue-500 text-white rounded-bl-none" 
-            : "bg-gray-100 text-gray-800 rounded-br-none"
-        )}
-      >
-        <p className="text-sm">{message.text}</p>
-        <span className="text-xs opacity-70 mt-1 block">
-          {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-        </span>
+    <div className={cn(
+      "mb-6 animate-fade-in",
+      message.isBot ? "" : "bg-gray-50"
+    )}>
+      <div className="flex max-w-3xl mx-auto">
+        {message.isBot && <ChatBotAvatar isBot={true} className="mt-1 mr-4" />}
+        <div className="flex-1">
+          <div
+            className={cn(
+              "px-4 py-2 rounded-lg",
+              message.isBot 
+                ? "bg-white text-gray-800" 
+                : "bg-blue-500 text-white"
+            )}
+          >
+            <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+          </div>
+          <span className="text-xs text-gray-500 mt-1 inline-block">
+            {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </span>
+        </div>
+        {!message.isBot && <ChatBotAvatar isBot={false} className="mt-1 ml-4" />}
       </div>
-      
-      {!message.isBot && <ChatBotAvatar isBot={false} />}
     </div>
   );
 };
