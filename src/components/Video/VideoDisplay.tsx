@@ -5,69 +5,147 @@ import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { toast } from "@/components/ui/use-toast";
 
+declare global {
+  interface Window {
+    YT: {
+      Player: any;
+      PlayerState: {
+        PLAYING: number;
+        PAUSED: number;
+        ENDED: number;
+      };
+    };
+    onYouTubeIframeAPIReady: () => void;
+  }
+}
+
 const VideoDisplay = () => {
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [volume, setVolume] = useState(75);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const playerRef = useRef<any>(null);
+  const playerContainerRef = useRef<HTMLDivElement>(null);
   
   // YouTube video ID - this is the ID from the link the user provided
   const videoId = "D2YhKaANbWE";
   
   useEffect(() => {
-    const loadVideo = async () => {
+    // Function to load the YouTube API script
+    const loadYouTubeAPI = () => {
+      // Check if script is already loaded
+      if (window.YT) {
+        initializePlayer();
+        return;
+      }
+
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+
+      window.onYouTubeIframeAPIReady = initializePlayer;
+    };
+
+    // Function to initialize the YouTube player
+    const initializePlayer = () => {
+      if (!playerContainerRef.current) return;
+      
       setIsLoading(true);
+      
       try {
-        // For demonstration purposes, we'll use a sample video
-        // In a real application, you would implement a server-side proxy to download from YouTube
-        // or use YouTube's API
-        const sampleVideoUrl = "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
-        setVideoUrl(sampleVideoUrl);
-        
-        toast({
-          title: "Video loaded",
-          description: "Sample video has been loaded as a demonstration",
+        playerRef.current = new window.YT.Player(playerContainerRef.current, {
+          videoId: videoId,
+          playerVars: {
+            autoplay: 0,
+            controls: 0,
+            rel: 0,
+            showinfo: 0,
+            mute: 0,
+            modestbranding: 1,
+          },
+          events: {
+            onReady: onPlayerReady,
+            onStateChange: onPlayerStateChange,
+            onError: onPlayerError,
+          }
         });
       } catch (error) {
-        console.error("Failed to load video:", error);
+        console.error("Failed to initialize YouTube player:", error);
         toast({
           title: "Error loading video",
-          description: "Could not load the video. Using sample video instead.",
+          description: "Could not load the YouTube video.",
           variant: "destructive",
         });
-      } finally {
         setIsLoading(false);
       }
     };
 
-    loadVideo();
+    const onPlayerReady = (event: any) => {
+      setIsLoading(false);
+      // Set initial volume
+      event.target.setVolume(volume);
+      toast({
+        title: "Video loaded",
+        description: "YouTube video has been loaded successfully",
+      });
+    };
+
+    const onPlayerStateChange = (event: any) => {
+      const playerState = event.data;
+      if (playerState === window.YT.PlayerState.PLAYING) {
+        setIsPlaying(true);
+      } else if (playerState === window.YT.PlayerState.PAUSED || 
+                playerState === window.YT.PlayerState.ENDED) {
+        setIsPlaying(false);
+      }
+    };
+    
+    const onPlayerError = (event: any) => {
+      console.error("YouTube player error:", event);
+      toast({
+        title: "Video error",
+        description: "An error occurred while playing the video.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    };
+
+    loadYouTubeAPI();
+
+    // Cleanup function
+    return () => {
+      if (playerRef.current && playerRef.current.destroy) {
+        playerRef.current.destroy();
+      }
+    };
   }, [videoId]);
 
+  // Handle play/pause toggle
   const togglePlay = () => {
-    if (videoRef.current) {
+    if (playerRef.current) {
       if (isPlaying) {
-        videoRef.current.pause();
+        playerRef.current.pauseVideo();
       } else {
-        videoRef.current.play();
+        playerRef.current.playVideo();
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
+  // Handle volume change
   const handleVolumeChange = (newVolume: number) => {
     setVolume(newVolume);
-    if (videoRef.current) {
-      videoRef.current.volume = newVolume / 100;
+    if (playerRef.current) {
+      playerRef.current.setVolume(newVolume);
     }
   };
 
+  // Handle fullscreen
   const handleFullscreen = () => {
-    if (videoRef.current) {
+    if (playerContainerRef.current) {
       if (document.fullscreenElement) {
         document.exitFullscreen();
       } else {
-        videoRef.current.requestFullscreen();
+        playerContainerRef.current.requestFullscreen();
       }
     }
   };
@@ -85,22 +163,12 @@ const VideoDisplay = () => {
               <div className="flex items-center justify-center w-full h-full text-white">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
               </div>
-            ) : videoUrl ? (
-              <video
-                ref={videoRef}
-                src={videoUrl}
-                className="w-full h-full object-contain"
-                onPlay={() => setIsPlaying(true)}
-                onPause={() => setIsPlaying(false)}
-                onVolumeChange={(e) => setVolume(Math.round((e.target as HTMLVideoElement).volume * 100))}
-                controls={false}
-                preload="auto"
+            ) : (
+              <div 
+                ref={playerContainerRef} 
+                className="w-full h-full"
                 onClick={togglePlay}
               />
-            ) : (
-              <div className="flex items-center justify-center w-full h-full text-white">
-                <p>No video available</p>
-              </div>
             )}
           </AspectRatio>
         </div>
