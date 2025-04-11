@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Volume2, Pause, Play, Maximize } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -10,19 +10,21 @@ const VideoDisplay = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [volume, setVolume] = useState(75);
-  const videoRef = React.useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   
-  // YouTube video ID
+  // YouTube video ID - this is the ID from the link the user provided
   const videoId = "D2YhKaANbWE";
   
   useEffect(() => {
-    const downloadYouTubeVideo = async () => {
+    const loadVideo = async () => {
       setIsLoading(true);
       try {
-        // In a real application, you would implement a server-side proxy to download the video
-        // For demo purposes, we're using a direct MP4 file
-        const videoUrl = `https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4`;
-        setVideoUrl(videoUrl);
+        // For demonstration purposes, we'll use a sample video
+        // In a real application, you would implement a server-side proxy to download from YouTube
+        // or use YouTube's API
+        const sampleVideoUrl = "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+        setVideoUrl(sampleVideoUrl);
+        
         toast({
           title: "Video loaded",
           description: "Sample video has been loaded as a demonstration",
@@ -31,17 +33,15 @@ const VideoDisplay = () => {
         console.error("Failed to load video:", error);
         toast({
           title: "Error loading video",
-          description: "Could not load the YouTube video. Using sample video instead.",
+          description: "Could not load the video. Using sample video instead.",
           variant: "destructive",
         });
-        // Fallback to a sample video
-        setVideoUrl("https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
       } finally {
         setIsLoading(false);
       }
     };
 
-    downloadYouTubeVideo();
+    loadVideo();
   }, [videoId]);
 
   const togglePlay = () => {
@@ -89,10 +89,13 @@ const VideoDisplay = () => {
               <video
                 ref={videoRef}
                 src={videoUrl}
-                className="w-full h-full"
+                className="w-full h-full object-contain"
                 onPlay={() => setIsPlaying(true)}
                 onPause={() => setIsPlaying(false)}
                 onVolumeChange={(e) => setVolume(Math.round((e.target as HTMLVideoElement).volume * 100))}
+                controls={false}
+                preload="auto"
+                onClick={togglePlay}
               />
             ) : (
               <div className="flex items-center justify-center w-full h-full text-white">
@@ -103,7 +106,7 @@ const VideoDisplay = () => {
         </div>
         
         {/* Custom video controls overlay */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 opacity-0 hover:opacity-100 transition-opacity">
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 opacity-100 hover:opacity-100 transition-opacity">
           <div className="flex items-center justify-between text-white">
             <Button variant="ghost" size="icon" className="text-white" onClick={togglePlay}>
               {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
