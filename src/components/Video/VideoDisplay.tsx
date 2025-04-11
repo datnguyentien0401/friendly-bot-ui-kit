@@ -170,12 +170,10 @@ const VideoDisplay = () => {
       <div className="flex-1 flex flex-col bg-gray-900 relative" ref={containerRef}>
         <div className="flex-1 w-full">
           <AspectRatio ratio={16 / 9} className="bg-black">
-            {isLoading ? (
+            {isLoading && (
               <div className="flex items-center justify-center w-full h-full text-white">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
               </div>
-            ) : (
-              <div className="w-full h-full"></div>
             )}
           </AspectRatio>
         </div>
