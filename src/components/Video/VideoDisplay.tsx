@@ -4,6 +4,7 @@ import { Volume2, Pause, Play, Maximize } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { toast } from "@/components/ui/use-toast";
+import { Slider } from "@/components/ui/slider";
 
 declare global {
   interface Window {
@@ -24,16 +25,25 @@ const VideoDisplay = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [volume, setVolume] = useState(75);
   const playerRef = useRef<any>(null);
-  const playerContainerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   
-  // YouTube video ID - this is the ID from the link the user provided
+  // YouTube video ID
   const videoId = "D2YhKaANbWE";
   
   useEffect(() => {
     // Function to load the YouTube API script
     const loadYouTubeAPI = () => {
+      // Create a div for the player if it doesn't exist
+      if (!document.getElementById('youtube-player-container')) {
+        const playerDiv = document.createElement('div');
+        playerDiv.id = 'youtube-player-container';
+        if (containerRef.current) {
+          containerRef.current.appendChild(playerDiv);
+        }
+      }
+
       // Check if script is already loaded
-      if (window.YT) {
+      if (window.YT && window.YT.Player) {
         initializePlayer();
         return;
       }
@@ -48,12 +58,12 @@ const VideoDisplay = () => {
 
     // Function to initialize the YouTube player
     const initializePlayer = () => {
-      if (!playerContainerRef.current) return;
+      if (!document.getElementById('youtube-player-container')) return;
       
       setIsLoading(true);
       
       try {
-        playerRef.current = new window.YT.Player(playerContainerRef.current, {
+        playerRef.current = new window.YT.Player('youtube-player-container', {
           videoId: videoId,
           playerVars: {
             autoplay: 0,
@@ -132,20 +142,21 @@ const VideoDisplay = () => {
   };
 
   // Handle volume change
-  const handleVolumeChange = (newVolume: number) => {
-    setVolume(newVolume);
+  const handleVolumeChange = (newVolume: number[]) => {
+    const volumeValue = newVolume[0];
+    setVolume(volumeValue);
     if (playerRef.current) {
-      playerRef.current.setVolume(newVolume);
+      playerRef.current.setVolume(volumeValue);
     }
   };
 
   // Handle fullscreen
   const handleFullscreen = () => {
-    if (playerContainerRef.current) {
+    if (containerRef.current) {
       if (document.fullscreenElement) {
         document.exitFullscreen();
       } else {
-        playerContainerRef.current.requestFullscreen();
+        containerRef.current.requestFullscreen();
       }
     }
   };
@@ -156,7 +167,7 @@ const VideoDisplay = () => {
         <h2 className="text-xl font-semibold">Video Player</h2>
       </div>
       
-      <div className="flex-1 flex flex-col bg-gray-900 relative">
+      <div className="flex-1 flex flex-col bg-gray-900 relative" ref={containerRef}>
         <div className="flex-1 w-full">
           <AspectRatio ratio={16 / 9} className="bg-black">
             {isLoading ? (
@@ -164,11 +175,7 @@ const VideoDisplay = () => {
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
               </div>
             ) : (
-              <div 
-                ref={playerContainerRef} 
-                className="w-full h-full"
-                onClick={togglePlay}
-              />
+              <div className="w-full h-full"></div>
             )}
           </AspectRatio>
         </div>
@@ -182,19 +189,14 @@ const VideoDisplay = () => {
             
             <div className="flex items-center gap-2">
               <Volume2 className="h-5 w-5" />
-              <div 
-                className="w-24 h-1 bg-white/30 rounded-full cursor-pointer"
-                onClick={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const x = e.clientX - rect.left;
-                  const percentage = Math.round((x / rect.width) * 100);
-                  handleVolumeChange(Math.max(0, Math.min(100, percentage)));
-                }}
-              >
-                <div 
-                  className="h-full bg-white rounded-full" 
-                  style={{ width: `${volume}%` }}
-                ></div>
+              <div className="w-24">
+                <Slider 
+                  value={[volume]} 
+                  max={100} 
+                  step={1}
+                  onValueChange={handleVolumeChange}
+                  className="w-full" 
+                />
               </div>
               <Button variant="ghost" size="icon" className="text-white ml-2" onClick={handleFullscreen}>
                 <Maximize className="h-5 w-5" />
