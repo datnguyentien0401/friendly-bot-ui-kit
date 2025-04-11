@@ -37,8 +37,14 @@ const VideoDisplay = () => {
       if (!document.getElementById('youtube-player-container')) {
         const playerDiv = document.createElement('div');
         playerDiv.id = 'youtube-player-container';
+        playerDiv.style.width = '100%';
+        playerDiv.style.height = '100%';
+        
         if (containerRef.current) {
-          containerRef.current.appendChild(playerDiv);
+          const playerContainer = containerRef.current.querySelector('.youtube-container');
+          if (playerContainer) {
+            playerContainer.appendChild(playerDiv);
+          }
         }
       }
 
@@ -65,6 +71,8 @@ const VideoDisplay = () => {
       try {
         playerRef.current = new window.YT.Player('youtube-player-container', {
           videoId: videoId,
+          width: '100%',
+          height: '100%',
           playerVars: {
             autoplay: 0,
             controls: 0,
@@ -168,8 +176,8 @@ const VideoDisplay = () => {
       </div>
       
       <div className="flex-1 flex flex-col bg-gray-900 relative" ref={containerRef}>
-        <div className="flex-1 w-full">
-          <AspectRatio ratio={16 / 9} className="bg-black">
+        <div className="flex-1 w-full youtube-container">
+          <AspectRatio ratio={16 / 9} className="bg-black w-full">
             {isLoading && (
               <div className="flex items-center justify-center w-full h-full text-white">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
